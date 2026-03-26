@@ -3,7 +3,7 @@
 //  Caches all app assets + XLSX CDN library for offline use
 // ═══════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'cascos-update-v1';
+const CACHE_NAME = 'cascos-update-v2';
 
 const STATIC_ASSETS = [
   './',
@@ -54,36 +54,25 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// ── FETCH: cache-first for app, network-first for CDN ───────────
+// ── FETCH: network-first for local files, network-first for CDN ──
+// Network-first ensures updated files are always served immediately.
+// Cache is only used as fallback when offline.
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Skip non-GET
   if (event.request.method !== 'GET') return;
 
-  // Network-first for CDN (fonts, xlsx lib) — fallback to cache
-  if (url.origin !== self.location.origin) {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
+  // Network-first for everything: try network, update cache, fall back to cache
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        // Only cache valid responses
+        if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // Cache-first for local assets
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+        }
         return response;
-      });
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });
