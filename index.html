@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Gestione listino prezzi Cascos per rivenditori Cormach — Aggiornamento 2026">
+  <meta name="theme-color" content="#e8a020">
+  <title>Cascos Update — Cormach Listino Manager</title>
+
+  <link rel="icon" type="image/svg+xml" href="public/icon.svg">
+  <link rel="icon" type="image/x-icon" href="public/favicon.ico">
+  <link rel="apple-touch-icon" sizes="192x192" href="public/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <svg class="logo-icon" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="512" height="512" rx="80" fill="#0d1117"/>
+      <rect x="80"  y="120" width="28" height="272" rx="6" fill="#e8a020"/>
+      <rect x="404" y="120" width="28" height="272" rx="6" fill="#e8a020"/>
+      <line x1="108" y1="207" x2="210" y2="178" stroke="#c87010" stroke-width="13" stroke-linecap="round"/>
+      <line x1="108" y1="267" x2="210" y2="296" stroke="#c87010" stroke-width="13" stroke-linecap="round"/>
+      <line x1="404" y1="207" x2="302" y2="178" stroke="#c87010" stroke-width="13" stroke-linecap="round"/>
+      <line x1="404" y1="267" x2="302" y2="296" stroke="#c87010" stroke-width="13" stroke-linecap="round"/>
+      <rect x="148" y="190" width="216" height="66" rx="18" fill="#1e2435"/>
+      <rect x="168" y="162" width="176" height="50" rx="15" fill="#252c3d"/>
+      <rect x="182" y="170" width="60" height="34" rx="8" fill="#3b82f6" fill-opacity="0.7"/>
+      <rect x="268" y="170" width="60" height="34" rx="8" fill="#3b82f6" fill-opacity="0.7"/>
+      <circle cx="188" cy="268" r="30" fill="#111827"/>
+      <circle cx="188" cy="268" r="18" fill="#1e2435"/>
+      <circle cx="188" cy="268" r="7"  fill="#e8a020"/>
+      <circle cx="324" cy="268" r="30" fill="#111827"/>
+      <circle cx="324" cy="268" r="18" fill="#1e2435"/>
+      <circle cx="324" cy="268" r="7"  fill="#e8a020"/>
+      <rect x="150" y="310" width="212" height="34" rx="6" fill="#e8a020"/>
+      <path d="M432 86 Q468 108 448 144" stroke="#22c55e" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <polygon points="440,154 455,134 460,156" fill="#22c55e"/>
+    </svg>
+    <div class="logo-text">
+      <div class="logo-main">CASCOS UPDATE</div>
+      <div class="logo-sub">Cormach · Listino 2026</div>
+    </div>
+  </div>
+
+  <div class="header-divider"></div>
+
+  <nav class="step-pills" aria-label="Workflow steps">
+    <div class="step-pill active" id="pill1"><span class="step-num">1</span>Carica Excel</div>
+    <div class="step-pill"        id="pill2"><span class="step-num">2</span>Trasporto</div>
+    <div class="step-pill"        id="pill3"><span class="step-num">3</span>Marginalità</div>
+    <div class="step-pill"        id="pill4"><span class="step-num">4</span>Calcola</div>
+    <div class="step-pill"        id="pill5"><span class="step-num">5</span>Esporta</div>
+  </nav>
+
+  <div class="offline-badge" id="offlineBadge">● offline</div>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+
+    <!-- 1. UPLOAD -->
+    <div class="section-card">
+      <div class="section-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <polyline points="9 15 12 12 15 15"/>
+        </svg>
+        Carica Listino
+      </div>
+      <div id="uploadArea">
+        <div class="drop-zone" id="dropZone">
+          <input type="file" accept=".xlsx,.xls" id="fileInput" aria-label="Seleziona file Excel">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#e8a020"
+               stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 8px;display:block">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18M9 21V9"/>
+          </svg>
+          <div class="drop-label">Trascina o clicca</div>
+          <div class="drop-hint">.xlsx · .xls</div>
+        </div>
+      </div>
+      <div id="statusMsg" role="status" aria-live="polite"></div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- 2. TRANSPORT -->
+    <div class="section-card" id="transportCard" style="display:none">
+      <div class="section-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <rect x="1" y="3" width="15" height="13" rx="1"/>
+          <path d="M16 8h4l3 3v5h-7V8z"/>
+          <circle cx="5.5"  cy="18.5" r="2.5"/>
+          <circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+        Costo Trasporto (€)
+      </div>
+      <div class="transport-grid" id="transportFields"></div>
+    </div>
+
+    <!-- 3. MARGINALITA -->
+    <div class="section-card" id="marginCard" style="display:none">
+      <div class="section-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        Marginalità
+      </div>
+      <div class="margin-block">
+        <div class="margin-row">
+          <div class="margin-label">MC% — Prezzo Netto Rivenditore</div>
+          <input type="range" id="mcRange" min="5" max="60" value="20" step="1"
+                 style="width:60px;accent-color:var(--gold)"
+                 oninput="syncMargin('mc')">
+          <div class="margin-val" id="mcVal">20%</div>
+        </div>
+        <div class="margin-row">
+          <div class="margin-label">Sconto Lordo → Prezzo Netto</div>
+          <input type="range" id="discRange" min="20" max="80" value="60" step="5"
+                 style="width:60px;accent-color:var(--blue)"
+                 oninput="syncMargin('disc')">
+          <div class="margin-val" id="discVal" style="color:var(--blue)">60%</div>
+        </div>
+      </div>
+      <div class="formula-preview" id="formulaPreview"></div>
+    </div>
+
+    <div class="sidebar-divider" id="actionDivider" style="display:none"></div>
+
+    <!-- 4-5. ACTIONS -->
+    <div class="section-card" id="actionCard" style="display:none">
+      <div class="section-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polyline points="13 2 13 9 20 9"/>
+          <path d="M20 14.5V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7.5L20 8V9"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+          <line x1="9" y1="18" x2="12" y2="18"/>
+        </svg>
+        Azioni
+      </div>
+      <button class="btn btn-calc" id="calcBtn" onclick="runCalc()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        Calcola Prezzi
+      </button>
+      <button class="btn btn-export" id="exportBtn" onclick="exportXLSX()" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Esporta Excel
+      </button>
+    </div>
+
+  </aside>
+
+  <main class="main-content">
+
+    <div class="topbar" id="topbar" style="display:none">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="search" class="search-input" placeholder="Cerca riferimento, modello…"
+               id="searchInput" oninput="renderTable()" aria-label="Cerca prodotti">
+      </div>
+      <div class="filter-chips" id="filterChips" role="tablist"></div>
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-n" id="statRows">—</div>
+          <div class="stat-l">Prodotti</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-n" id="statNew">—</div>
+          <div class="stat-l">Standard</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap" id="tableWrap">
+      <div class="empty">
+        <svg class="empty-icon" width="80" height="80" viewBox="0 0 512 512" fill="none">
+          <rect width="512" height="512" rx="80" fill="#1c2333"/>
+          <rect x="80"  y="120" width="28" height="272" rx="6" fill="#2e3a4e"/>
+          <rect x="404" y="120" width="28" height="272" rx="6" fill="#2e3a4e"/>
+          <line x1="108" y1="207" x2="210" y2="178" stroke="#1e2d42" stroke-width="13" stroke-linecap="round"/>
+          <line x1="108" y1="267" x2="210" y2="296" stroke="#1e2d42" stroke-width="13" stroke-linecap="round"/>
+          <line x1="404" y1="207" x2="302" y2="178" stroke="#1e2d42" stroke-width="13" stroke-linecap="round"/>
+          <line x1="404" y1="267" x2="302" y2="296" stroke="#1e2d42" stroke-width="13" stroke-linecap="round"/>
+          <rect x="148" y="190" width="216" height="66" rx="18" fill="#1a2236"/>
+          <rect x="168" y="162" width="176" height="50" rx="15" fill="#1e2a3d"/>
+          <rect x="150" y="310" width="212" height="34" rx="6" fill="#2e3a4e"/>
+        </svg>
+        <div>
+          <div class="empty-title">Nessun listino caricato</div>
+          <div class="empty-sub">Carica il file Excel Cascos dalla barra laterale per avviare il calcolo dei prezzi rivenditori Cormach.</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- SheetJS CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- App logic -->
+<script src="src/app.js"></script>
+
+</body>
+</html>
