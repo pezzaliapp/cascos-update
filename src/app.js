@@ -236,14 +236,14 @@ function syncMargin(which, source) {
   // source: 'range' or 'number'
   if (which === 'mc') {
     const range = $('mcRange'), num = $('mcNum');
-    if (source === 'range') { num.value  = range.value; }
-    else                    { range.value = num.value;  }
-    $('mcVal').textContent = parseFloat(num.value).toFixed(1) + '%';
+    if (!range || !num) return;
+    if (source === 'range') { num.value   = parseFloat(range.value).toFixed(1); }
+    else                    { range.value = num.value; }
   } else {
     const range = $('discRange'), num = $('discNum');
-    if (source === 'range') { num.value  = range.value; }
-    else                    { range.value = num.value;  }
-    $('discVal').textContent = parseFloat(num.value).toFixed(1) + '%';
+    if (!range || !num) return;
+    if (source === 'range') { num.value   = parseFloat(range.value).toFixed(1); }
+    else                    { range.value = num.value; }
   }
   updateFormula();
 }
