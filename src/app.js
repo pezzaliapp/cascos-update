@@ -205,36 +205,52 @@ function parseRows(rows, filename) {
 //  TRANSPORT FIELDS
 // ═══════════════════════════════════════════════════════════════════
 function buildTransportFields(cats) {
-  $('transportFields').innerHTML = cats.map(cat => {
+  const el = $('transportFields');
+  el.innerHTML = cats.map((cat, i) => {
     const col = cfgOf(cat).col;
     const val = categories[cat].t;
+    const safe = cat.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
     return `
       <div class="transport-row">
         <span class="cat-dot" style="background:${col}"></span>
-        <span class="cat-label" title="${cat}">${cat}</span>
-        <input type="number" class="num-input"
-          value="${val}" min="0" step="10"
-          onchange="categories[${JSON.stringify(cat)}].t = +this.value">
+        <span class="cat-label" title="${safe}">${cat}</span>
+        <input type="number" class="num-input" data-cat="${safe}"
+          value="${val}" min="0" step="10">
         <span class="unit-tag">€</span>
       </div>`;
   }).join('');
+
+  // Delegated listener — avoids broken onchange with quotes in cat names
+  el.oninput = e => {
+    const input = e.target.closest('input[data-cat]');
+    if (!input) return;
+    const cat = input.dataset.cat;
+    if (categories[cat] !== undefined) categories[cat].t = +input.value;
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════════
 //  MARGIN / FORMULA
 // ═══════════════════════════════════════════════════════════════════
-function syncMargin(which) {
+function syncMargin(which, source) {
+  // source: 'range' or 'number'
   if (which === 'mc') {
-    $('mcVal').textContent = $('mcRange').value + '%';
+    const range = $('mcRange'), num = $('mcNum');
+    if (source === 'range') { num.value  = range.value; }
+    else                    { range.value = num.value;  }
+    $('mcVal').textContent = parseFloat(num.value).toFixed(1) + '%';
   } else {
-    $('discVal').textContent = $('discRange').value + '%';
+    const range = $('discRange'), num = $('discNum');
+    if (source === 'range') { num.value  = range.value; }
+    else                    { range.value = num.value;  }
+    $('discVal').textContent = parseFloat(num.value).toFixed(1) + '%';
   }
   updateFormula();
 }
 
 function updateFormula() {
-  const mc   = $('mcRange')   ? +$('mcRange').value   : 20;
-  const disc = $('discRange') ? +$('discRange').value : 60;
+  const mc   = $('mcNum')   ? parseFloat($('mcNum').value)   : 20;
+  const disc = $('discNum') ? parseFloat($('discNum').value) : 60;
   const el = $('formulaPreview');
   if (!el) return;
   el.innerHTML = `
@@ -250,8 +266,8 @@ function updateFormula() {
 function runCalc() {
   if (!rawData.length) return;
 
-  const mc   = +$('mcRange').value   / 100;
-  const disc = +$('discRange').value / 100;
+  const mc   = parseFloat($('mcNum').value)   / 100;
+  const disc = parseFloat($('discNum').value) / 100;
 
   function calc(base, transport) {
     if (base === null) return null;
@@ -289,10 +305,22 @@ function runCalc() {
 // ═══════════════════════════════════════════════════════════════════
 function buildFilterChips() {
   const cats = ['Tutti', ...new Set(calcData.map(r => r.cat))];
-  $('filterChips').innerHTML = cats
-    .map(c => `<div class="chip ${c === activeFilter ? 'active' : ''}"
-                    onclick="setFilter(${JSON.stringify(c)})">${c}</div>`)
+  const el = $('filterChips');
+  el.innerHTML = cats
+    .map(c => {
+      const active = c === activeFilter ? 'active' : '';
+      // Use data-cat attribute — avoids broken onclick with quotes inside HTML attr
+      const safe = c.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+      return `<div class="chip ${active}" data-cat="${safe}">${c}</div>`;
+    })
     .join('');
+
+  // Single delegated listener — replaces old per-chip onclick
+  el.onclick = e => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    setFilter(chip.dataset.cat);
+  };
 }
 
 function setFilter(cat) {
@@ -357,7 +385,7 @@ function renderTable() {
     <th onclick="doSort('ref')">Riferimento</th>
     <th onclick="doSort('model')">Modello</th>
     <th onclick="doSort('cat')">Categoria</th>
-    <th onclick="doSort('cap')">Cap.</th>
+    <th onclick="doSort('cap')">Portata</th>
     <th class="td-num" onclick="doSort('priceE')">${hasF ? 'Acq. C/P' : 'Acquisto'}</th>`;
   if (hasF) h += `<th class="td-num" onclick="doSort('priceF')">Acq. S/P</th>`;
   if (hasCalc) {
@@ -429,14 +457,14 @@ function doSort(col) {
 function exportXLSX() {
   if (!calcData.length) return;
 
-  const mc   = $('mcRange').value;
-  const disc = $('discRange').value;
+  const mc   = $('mcNum').value;
+  const disc = $('discNum').value;
   const date = new Date().toLocaleDateString('it-IT');
   const hasF = calcData.some(r => r.priceF != null);
 
   // ── Sheet 1: Listino Completo
   const hdr1 = [
-    'Sezione','Riferimento','Modello','Capacità','Categoria',
+    'Sezione','Riferimento','Modello','Portata','Categoria',
     'Trasporto (€)','P.Acq. C/Pedana (€)',
   ];
   if (hasF) hdr1.push('P.Acq. S/Pedana (€)');
@@ -469,7 +497,7 @@ function exportXLSX() {
   const aoa2 = [
     ['LISTINO NETTI RIVENDITORI CASCOS 2026'],
     [`MC%: ${mc}% · ${date}`], [],
-    ['Riferimento','Modello','Capacità','Categoria','Netto Riv. (€)'],
+    ['Riferimento','Modello','Portata','Categoria','Netto Riv. (€)'],
   ];
   calcData.filter(r => !r.isMisti && r.cE).forEach(r =>
     aoa2.push([r.ref, r.model, r.cap, r.cat, r.cE.netto])
@@ -479,7 +507,7 @@ function exportXLSX() {
   const aoa3 = [
     ['LISTINO LORDO RIVENDITORI CASCOS 2026'],
     [`Applicando sconto ${disc}% al lordo → P. netto riv. · ${date}`], [],
-    ['Riferimento','Modello','Capacità','Categoria',`Lordo Riv. (€)`,`Netto Riv. (€)`],
+    ['Riferimento','Modello','Portata','Categoria',`Lordo Riv. (€)`,`Netto Riv. (€)`],
   ];
   calcData.filter(r => !r.isMisti && r.cE).forEach(r =>
     aoa3.push([r.ref, r.model, r.cap, r.cat, r.cE.lordo, r.cE.netto])
@@ -489,7 +517,7 @@ function exportXLSX() {
   const aoa4 = [
     ['PREZZI ORDINI MISTI CASCOS 2026 (9-12+ ponti)'],
     [`MC%: ${mc}% · ${date}`], [],
-    ['Riferimento','Modello','Capacità','Categoria','P.Acq. (€)','Netto Riv. (€)','Lordo Riv. (€)'],
+    ['Riferimento','Modello','Portata','Categoria','P.Acq. (€)','Netto Riv. (€)','Lordo Riv. (€)'],
   ];
   calcData.filter(r => r.isMisti && r.cE).forEach(r =>
     aoa4.push([r.ref, r.model, r.cap, r.cat, r.priceE, r.cE.netto, r.cE.lordo])
@@ -536,6 +564,42 @@ function resetAll() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+//  THEME (dark / light)
+// ═══════════════════════════════════════════════════════════════════
+function initTheme() {
+  const saved = localStorage.getItem('cascos-theme') || 'dark';
+  applyTheme(saved);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('cascos-theme', theme);
+  const btn = $('themeToggle');
+  if (!btn) return;
+  btn.title = theme === 'dark' ? 'Passa a modalità giorno' : 'Passa a modalità notte';
+  btn.innerHTML = theme === 'dark'
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+         <circle cx="12" cy="12" r="5"/>
+         <line x1="12" y1="1"  x2="12" y2="3"/>
+         <line x1="12" y1="21" x2="12" y2="23"/>
+         <line x1="4.22" y1="4.22"  x2="5.64" y2="5.64"/>
+         <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+         <line x1="1" y1="12" x2="3" y2="12"/>
+         <line x1="21" y1="12" x2="23" y2="12"/>
+         <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+       </svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+       </svg>`;
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+// ═══════════════════════════════════════════════════════════════════
 //  ONLINE / OFFLINE INDICATOR
 // ═══════════════════════════════════════════════════════════════════
 function updateOnlineStatus() {
@@ -552,6 +616,7 @@ function updateOnlineStatus() {
 //  INIT
 // ═══════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   initDropZone();
   updateFormula();
   updateOnlineStatus();
@@ -574,3 +639,4 @@ window.exportXLSX       = exportXLSX;
 window.setFilter        = setFilter;
 window.doSort           = doSort;
 window.resetAll         = resetAll;
+window.toggleTheme      = toggleTheme;

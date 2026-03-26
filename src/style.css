@@ -32,7 +32,52 @@
   --header-h:    62px;
 }
 
-html { font-size: 14px; }
+/* ── LIGHT THEME ────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:          #f0f2f5;
+  --bg2:         #e8eaed;
+  --panel:       #ffffff;
+  --border:      #d1d5db;
+  --border2:     #b0b7c3;
+  --gold:        #b86800;
+  --gold-dim:    #8a4e00;
+  --gold-glow:   rgba(184, 104, 0, 0.10);
+  --blue:        #1d4ed8;
+  --blue-dim:    rgba(29, 78, 216, 0.10);
+  --green:       #15803d;
+  --green-dim:   rgba(21, 128, 61, 0.10);
+  --red:         #dc2626;
+  --text:        #111827;
+  --muted:       #9ca3af;
+  --muted2:      #6b7280;
+}
+
+[data-theme="light"] body::before { display: none; }
+
+[data-theme="light"] header {
+  background: rgba(240, 242, 245, 0.96);
+  border-bottom-color: var(--border);
+}
+
+[data-theme="light"] .logo-main {
+  background: linear-gradient(135deg, #b86800 0%, #d4860a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="light"] .drop-zone { background: rgba(0,0,0,0.01); }
+[data-theme="light"] .drop-zone:hover,
+[data-theme="light"] .drop-zone.over { background: var(--gold-glow); }
+
+[data-theme="light"] thead th { background: var(--bg2); }
+[data-theme="light"] tr:hover td { background: rgba(0,0,0,0.02); }
+
+[data-theme="light"] .btn-calc {
+  box-shadow: 0 0 16px rgba(184, 104, 0, 0.18);
+}
+
+
 
 body {
   background: var(--bg);
@@ -162,7 +207,6 @@ header {
 
 /* offline badge */
 .offline-badge {
-  margin-left: auto;
   padding: 3px 10px;
   border-radius: 12px;
   font-size: 10px;
@@ -174,6 +218,38 @@ header {
   flex-shrink: 0;
 }
 .offline-badge.visible { display: block; }
+
+/* header right group */
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* theme toggle button */
+.theme-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border2);
+  background: var(--panel);
+  color: var(--muted2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.theme-toggle svg { width: 16px; height: 16px; pointer-events: none; }
+.theme-toggle:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--gold-glow);
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    LAYOUT
@@ -329,20 +405,54 @@ header {
 }
 .margin-row {
   display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  gap: 10px;
+  flex-direction: column;
+  padding: 10px 12px;
+  gap: 7px;
   border-bottom: 1px solid var(--border);
 }
 .margin-row:last-child { border-bottom: none; }
-.margin-label { flex: 1; font-size: 11px; color: var(--muted2); line-height: 1.4; }
-.margin-val {
+.margin-label { font-size: 11px; color: var(--muted2); line-height: 1.4; }
+
+/* slider + number input row */
+.margin-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.margin-controls input[type="range"] {
+  flex: 1;
+  height: 4px;
+  accent-color: var(--gold);
+  cursor: pointer;
+  min-width: 0;
+}
+.margin-controls input[type="range"].disc { accent-color: var(--blue); }
+
+.margin-num {
+  width: 62px;
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-sm);
+  color: var(--text);
   font-family: var(--mono);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--gold);
-  min-width: 44px;
+  padding: 4px 6px;
   text-align: right;
+  transition: border-color 0.15s;
+  -moz-appearance: textfield;
+  flex-shrink: 0;
+}
+.margin-num::-webkit-outer-spin-button,
+.margin-num::-webkit-inner-spin-button { -webkit-appearance: none; }
+.margin-num:focus { outline: none; border-color: var(--gold); }
+.margin-num.disc:focus { border-color: var(--blue); }
+
+.margin-unit {
+  font-size: 11px;
+  color: var(--muted2);
+  font-family: var(--mono);
+  flex-shrink: 0;
 }
 
 /* ── FORMULA PREVIEW ────────────────────────────────────────────── */
