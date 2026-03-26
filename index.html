@@ -60,7 +60,15 @@
     <div class="step-pill"        id="pill5"><span class="step-num">5</span>Esporta</div>
   </nav>
 
-  <div class="offline-badge" id="offlineBadge">● offline</div>
+  <div class="header-right">
+    <div class="offline-badge" id="offlineBadge">● offline</div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Cambia tema">
+      <!-- Icon injected by app.js applyTheme() -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </div>
 </header>
 
 <div class="layout">
@@ -121,17 +129,23 @@
       <div class="margin-block">
         <div class="margin-row">
           <div class="margin-label">MC% — Prezzo Netto Rivenditore</div>
-          <input type="range" id="mcRange" min="5" max="60" value="20" step="1"
-                 style="width:60px;accent-color:var(--gold)"
-                 oninput="syncMargin('mc')">
-          <div class="margin-val" id="mcVal">20%</div>
+          <div class="margin-controls">
+            <input type="range"  id="mcRange" min="5" max="60"  value="20" step="0.1"
+                   oninput="syncMargin('mc','range')" aria-label="Slider MC%">
+            <input type="number" id="mcNum"   min="5" max="60"  value="20" step="0.1"
+                   class="margin-num" oninput="syncMargin('mc','number')" aria-label="Valore MC%">
+            <span class="margin-unit">%</span>
+          </div>
         </div>
         <div class="margin-row">
           <div class="margin-label">Sconto Lordo → Prezzo Netto</div>
-          <input type="range" id="discRange" min="20" max="80" value="60" step="5"
-                 style="width:60px;accent-color:var(--blue)"
-                 oninput="syncMargin('disc')">
-          <div class="margin-val" id="discVal" style="color:var(--blue)">60%</div>
+          <div class="margin-controls">
+            <input type="range"  id="discRange" min="20" max="80" value="60" step="0.1"
+                   oninput="syncMargin('disc','range')" aria-label="Slider Sconto Lordo">
+            <input type="number" id="discNum"   min="20" max="80" value="60" step="0.1"
+                   class="margin-num disc" oninput="syncMargin('disc','number')" aria-label="Valore Sconto Lordo">
+            <span class="margin-unit">%</span>
+          </div>
         </div>
       </div>
       <div class="formula-preview" id="formulaPreview"></div>
